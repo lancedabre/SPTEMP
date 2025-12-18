@@ -62,7 +62,7 @@ export const handleTabKey = (editor: Editor, event: React.KeyboardEvent) => {
   let newType: ScreenplayType = type;
 
   // Logic: Tab cycles through types based on context
-  if (type === 'action') newType = 'character';
+  if (type === 'scene-heading') newType = 'character';
   else if (type === 'character') newType = 'transition';
   else if (type === 'transition') newType = 'action';
   else if (type === 'dialogue') newType = 'parenthetical';

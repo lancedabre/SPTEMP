@@ -1,35 +1,23 @@
 @import "tailwindcss";
 
+@theme {
+  --font-courier: "Courier Prime", "Courier", monospace;
+
+  /* --- MARGINS (Relative to the 1.5in Page Padding) --- */
+  --spacing-dialogue-indent: 1.0in; 
+  --spacing-character-indent: 2.2in; 
+  --spacing-parenthetical-indent: 1.6in; 
+  
+  /* --- WIDTH CONSTRAINTS (Crucial Fix Below) --- */
+  /* We use --max-width-* so Tailwind creates 'max-w-dialogue' */
+  --max-width-dialogue: 33ch;      
+  --max-width-parenthetical: 20ch; 
+}
+
+/* Default Dark Mode / Light Mode setup */
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  /* 1. Define the Courier Font */
-  --font-courier: "Courier Prime", "Courier", monospace;
-
-  /* 2. Define Screenplay-Specific Margins (The "Hollywood Geometry") */
-  --spacing-dialogue-indent: 2.5in;     /* 2.5 inches from left */
-  --spacing-character-indent: 3.7in;    /* 3.7 inches from left */
-  --spacing-parenthetical-indent: 3.1in; /* 3.1 inches from left */
-  
-  /* 3. Optional: Define a specific max-width for dialogue */
-  --width-dialogue-width: 35ch;
-  --font-courier: "Courier Prime", "Courier", monospace;
-  
-  /* The Hollywood Geometry */
-  --spacing-dialogue-indent: 2.5in;
-  --spacing-character-indent: 3.7in;
-  --spacing-parenthetical-indent: 3.1in;
-  
-  /* Constraints */
-  --width-dialogue: 35ch;
-  --width-parenthetical: 25ch;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -44,11 +32,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-/* Optional: Add a "page" class for visual flair */
+
+/* --- THE PAPER CONTAINER --- */
 .screenplay-page {
   box-shadow: 0 0 15px rgba(0,0,0,0.1);
   width: 8.5in;
   min-height: 11in;
-  padding: 1in 1.5in; /* 1" top/bot, 1.5" left/right */
+  padding: 1in 1.5in; /* 1.5 inch Left/Right Padding is the "Anchor" */
   background: white;
+  
+  /* Force text color to black regardless of dark mode */
+  color: black; 
 }
