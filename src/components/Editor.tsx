@@ -1,17 +1,19 @@
 'use client'
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback, useState, useRef } from 'react';
 import { createEditor, Descendant } from 'slate';
 import { Slate, Editable, withReact, RenderElementProps } from 'slate-react';
 import { withHistory } from 'slate-history';
 import { withScreenplayLogic, handleTabKey } from '@/hooks/useScreenplayLogic';
 import { saveToDisk, loadFromDisk } from '@/utils/fileSystem';
 import { exportToPdf } from '@/utils/pdfExporter';
+
 const initialValue: Descendant[] = [{ type: 'scene-heading', children: [{ text: 'INT. START HERE' }] }];
 
 export default function ScreenplayEditor() {
   const editor = useMemo(() => withScreenplayLogic(withHistory(withReact(createEditor()))), []);
   const [value, setValue] = useState<Descendant[]>(initialValue);
-
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editorKey, setEditorKey] = useState(0);
   // The CSS Renderer
   const renderElement = useCallback((props: RenderElementProps) => {
     const { attributes, children, element } = props;
@@ -25,6 +27,29 @@ export default function ScreenplayEditor() {
       default:              return <p {...attributes}>{children}</p>;
     }
   }, []);
+  const handleLoadProject = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const newContent = await loadFromDisk(file);
+      
+      setValue(newContent);
+      
+      // NEW: Force the Slate component to re-mount
+      setEditorKey(prev => prev + 1);
+      
+      // Clear history so you can't "Undo" the file load
+      editor.history.undos = [];
+      editor.history.redos = [];
+
+    } catch (error) {
+      console.error(error);
+      alert("Error loading file");
+    } finally {
+      if (event.target) event.target.value = '';
+    }
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-900 p-8">
@@ -40,10 +65,34 @@ export default function ScreenplayEditor() {
         <div className="w-px bg-gray-600"></div>
         <button onClick={() => exportToPdf(value)} className="hover:text-red-400 font-bold">Export PDF</button>
       </div>
+      {/* Save Button */}
+        <button onClick={() => saveToDisk(value)}>Save Project</button>
+        
+        {/* Load Button (Triggering the hidden input) */}
+        <button 
+          onClick={() => fileInputRef.current?.click()} 
+          className="hover:text-blue-400"
+        >
+          Load Project
+        </button>
+        
+        {/* Hidden Input */}
+        <input 
+          type="file" 
+          ref={fileInputRef}
+          className="hidden" 
+          accept=".screenplay,.json" 
+          onChange={handleLoadProject}
+        />
 
       {/* The Paper */}
       <div className="screenplay-page font-courier text-[12pt] leading-tight">
-        <Slate editor={editor} initialValue={value} onChange={setValue}>
+        <Slate 
+          key={editorKey} 
+          editor={editor} 
+          initialValue={value} 
+          onChange={setValue}
+        >
           <Editable 
             renderElement={renderElement}
             onKeyDown={(e) => handleTabKey(editor, e)}
