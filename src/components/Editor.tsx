@@ -20,43 +20,49 @@ import { saveToDisk, loadFromDisk } from "@/utils/fileSystem";
 import { exportToPdf } from "@/utils/pdfExporter";
 import { ScreenplayType } from "@/types/screenplay";
 import { useCloudStorage } from "@/hooks/useCloudStorage";
+import { useRouter } from 'next/navigation';
+// Note: If you don't have lucide-react installed, remove the Icon components inside the menu or install it.
+import { Save, FileText, FolderOpen, Download, FileJson } from 'lucide-react'; 
 
 interface EditorProps {
   projectId: string;
 }
 
 export default function ScreenplayEditor({ projectId }: EditorProps) {
+  const router = useRouter();
+  
+  // State for the popup menu
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const editor = useMemo(
     () => withScreenplayLogic(withHistory(withReact(createEditor()))),
     []
   );
+
   // 1. Hook into the Cloud
   const { content, title, updateTitle, loading, saveToCloud, saveStatus } =
     useCloudStorage(projectId);
 
-  // 2. Local State (Slate needs its own state to be fast)
+  // 2. Local State
   const [value, setValue] = useState<Descendant[]>([]);
-  const [setEditorKey] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // (We removed setEditorKey as discussed)
+
   useEffect(() => {
     if (content && value.length === 0) {
       setValue(content);
     }
   }, [content]);
+
   const handleEditorChange = (newValue: Descendant[]) => {
     setValue(newValue);
-
-    // Basic Debounce: Save after 1.5 seconds of no typing
-    // Note: Real-world apps use a proper 'useDebounce' hook,
-    // but we can pass the raw value to the hook if we updated useCloudStorage to handle debounce (which we did!)
+    // Auto-save to cloud
     saveToCloud(newValue);
   };
+
   // The CSS Renderer
-  // The Renderer: Converts Slate nodes into HTML with correct styles
   const renderElement = useCallback((props: RenderElementProps) => {
     const { attributes, children, element } = props;
-
-    // Safety check: If the node is broken, render a plain paragraph to prevent crashing
     if (!element) return <p {...attributes}>{children}</p>;
 
     switch (element.type) {
@@ -65,7 +71,7 @@ export default function ScreenplayEditor({ projectId }: EditorProps) {
           <h3
             {...attributes}
             className="mt-8 mb-4 text-left w-full"
-            style={{ textTransform: "uppercase" }} // Forces Uppercase
+            style={{ textTransform: "uppercase" }}
           >
             {children}
           </h3>
@@ -84,8 +90,8 @@ export default function ScreenplayEditor({ projectId }: EditorProps) {
             {...attributes}
             className="mt-4 mb-0"
             style={{
-              marginLeft: "2.2in", // 2.2" Indent + 1.5" Page Padding = 3.7" Total
-              textTransform: "uppercase", // Forces Uppercase
+              marginLeft: "2.2in",
+              textTransform: "uppercase",
             }}
           >
             {children}
@@ -98,8 +104,8 @@ export default function ScreenplayEditor({ projectId }: EditorProps) {
             {...attributes}
             className="mb-0"
             style={{
-              marginLeft: "1.0in", // 1.0" Indent + 1.5" Page Padding = 2.5" Total
-              maxWidth: "35ch", // Restricts width so it looks like a column
+              marginLeft: "1.0in",
+              maxWidth: "35ch",
             }}
           >
             {children}
@@ -112,7 +118,7 @@ export default function ScreenplayEditor({ projectId }: EditorProps) {
             {...attributes}
             className="mb-0 italic text-sm text-gray-600"
             style={{
-              marginLeft: "1.6in", // 1.6" Indent + 1.5" Page Padding = 3.1" Total
+              marginLeft: "1.6in",
               maxWidth: "20ch",
             }}
           >
@@ -136,32 +142,6 @@ export default function ScreenplayEditor({ projectId }: EditorProps) {
     }
   }, []);
 
-  const handleLoadProject = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const newContent = await loadFromDisk(file);
-
-      // Basic Validation
-      if (!Array.isArray(newContent) || newContent.length === 0) {
-        throw new Error("Invalid file structure");
-      }
-
-      setValue(newContent);
-
-      // Clear history so "Undo" doesn't revert to the old file
-      editor.history.undos = [];
-      editor.history.redos = [];
-    } catch (error) {
-      console.error(error);
-      alert("Error loading file. It might be corrupted.");
-    } finally {
-      if (event.target) event.target.value = "";
-    }
-  };
   const toggleBlock = useCallback(
     (format: ScreenplayType) => {
       Transforms.setNodes(editor, { type: format });
@@ -169,6 +149,7 @@ export default function ScreenplayEditor({ projectId }: EditorProps) {
     },
     [editor]
   );
+
   if (loading || value.length === 0) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
@@ -177,99 +158,124 @@ export default function ScreenplayEditor({ projectId }: EditorProps) {
     );
   }
 
-  // Make sure you have these imports at the top:
-  // import { Transforms } from 'slate';
-  // import { ReactEditor } from 'slate-react';
-  // import { ScreenplayType } from '@/types/screenplay';
-
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-900 p-8">
+      
       {/* Title Input */}
-      <div className="mb-6 border-b border-gray-800 pb-4">
+      <div className="mb-6 border-b border-gray-800 pb-4 w-full max-w-4xl">
         <input
           type="text"
           value={title}
           onChange={(e) => updateTitle(e.target.value)}
-          className="w-full bg-transparent text-3xl font-bold text-white placeholder-gray-600 outline-none"
+          className="w-full bg-transparent text-3xl font-bold text-white placeholder-gray-600 outline-none text-center"
           placeholder="Untitled Screenplay"
         />
       </div>
+
       {/* --- MAIN TOOLBAR --- */}
-      <div className="fixed top-4 flex flex-col gap-2 z-50">
-        {/* Show Cloud Status */}
-        <span className="text-xs text-gray-400 mr-4">
+      <div className="fixed top-4 flex flex-col gap-2 z-50 items-center">
+        
+        {/* Cloud Status Indicator */}
+        <span className="text-xs text-gray-400 mb-1">
           {saveStatus === "saving"
             ? "☁️ Saving..."
             : saveStatus === "saved"
             ? "✅ Saved"
             : ""}
         </span>
-        {/* Row 1: File Actions (Save/Load/Export) */}
-        <div className="bg-gray-800 text-white p-2 rounded shadow-lg flex justify-center gap-4 items-center border border-gray-700">
-          <button
-            onClick={() => saveToDisk(value)}
-            className="hover:text-green-400 font-medium text-sm"
-          >
-            Save
-          </button>
-          <div className="w-px h-4 bg-gray-600"></div>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="hover:text-blue-400 font-medium text-sm"
-          >
-            Load
-          </button>
-          <div className="w-px h-4 bg-gray-600"></div>
-          <button
-            onClick={() => exportToPdf(value)}
-            className="hover:text-red-400 font-bold text-sm"
-          >
-            PDF
-          </button>
-        </div>
 
-        {/* Row 2: Formatting Buttons (The new feature) */}
-        <div className="bg-gray-800 text-white p-1 rounded shadow-lg flex gap-1 items-center border border-gray-700">
-          <FormatButton
-            label="Heading"
-            format="scene-heading"
-            onToggle={toggleBlock}
-          />
+        {/* --- NEW FILE MENU & FORMAT BUTTONS CONTAINER --- */}
+        <div className="bg-gray-800 p-1 rounded shadow-lg flex gap-2 items-center border border-gray-700">
+          
+          {/* 1. THE FILE MENU BUTTON */}
+          <div className="relative">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-[10px] font-bold uppercase tracking-wider rounded transition-colors flex items-center gap-2"
+            >
+              📁 File
+            </button>
+
+            {/* THE POPUP MENU */}
+            {isMenuOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setIsMenuOpen(false)} 
+                />
+                <div className="absolute left-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden text-sm">
+                  
+                  {/* Save to Cloud (Manual Trigger) */}
+                  <button
+                    onClick={() => {
+                      saveToCloud(value);
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-3 text-gray-200 hover:bg-gray-700 hover:text-white flex items-center gap-2"
+                  >
+                    <Save size={14} /> <span>Save (Cloud)</span>
+                  </button>
+
+                  {/* Load / Open (Go to Dashboard) */}
+                  <button
+                    onClick={() => router.push('/')}
+                    className="w-full text-left px-4 py-3 text-gray-200 hover:bg-gray-700 hover:text-white flex items-center gap-2"
+                  >
+                    <FolderOpen size={14} /> <span>Open Project...</span>
+                  </button>
+
+                  <div className="border-t border-gray-700 my-1"></div>
+                  <div className="px-4 py-1 text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                    Export
+                  </div>
+
+                  {/* Export PDF */}
+                  <button
+                    onClick={() => {
+                      exportToPdf(value);
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-gray-200 hover:bg-gray-700 hover:text-white flex items-center gap-2"
+                  >
+                    <FileText size={14} /> <span>Download PDF</span>
+                  </button>
+
+                  {/* Export JSON / .screenplay */}
+                  <button
+                    onClick={() => {
+                      saveToDisk(value);
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-gray-200 hover:bg-gray-700 hover:text-white flex items-center gap-2"
+                  >
+                    <FileJson size={14} /> <span>Download JSON</span>
+                  </button>
+
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Vertical Separator */}
+          <div className="w-px h-4 bg-gray-600 mx-1"></div>
+
+          {/* 2. FORMATTING BUTTONS (Row 2 moved here to be side-by-side or keep below if preferred) */}
+          <FormatButton label="Heading" format="scene-heading" onToggle={toggleBlock} />
           <FormatButton label="Action" format="action" onToggle={toggleBlock} />
-          <FormatButton
-            label="Char"
-            format="character"
-            onToggle={toggleBlock}
-          />
+          <FormatButton label="Char" format="character" onToggle={toggleBlock} />
           <FormatButton label="Dial" format="dialogue" onToggle={toggleBlock} />
-          <FormatButton
-            label="Paren"
-            format="parenthetical"
-            onToggle={toggleBlock}
-          />
-          <FormatButton
-            label="Trans"
-            format="transition"
-            onToggle={toggleBlock}
-          />
+          <FormatButton label="Paren" format="parenthetical" onToggle={toggleBlock} />
+          <FormatButton label="Trans" format="transition" onToggle={toggleBlock} />
+          
         </div>
       </div>
-
-      {/* Hidden Input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        accept=".screenplay,.json"
-        onChange={handleLoadProject}
-      />
 
       {/* The Paper */}
       <div className="screenplay-page mt-28 font-courier text-[12pt] leading-tight text-black selection:bg-yellow-200 shadow-2xl">
         <Slate
           editor={editor}
           initialValue={value}
-          onChange={handleEditorChange} // <--- Updated Handler
+          onChange={handleEditorChange}
         >
           <Editable
             renderElement={renderElement}
@@ -283,9 +289,9 @@ export default function ScreenplayEditor({ projectId }: EditorProps) {
     </div>
   );
 }
+
 // -------------------------------------------------------------------------
 // Helper Component: FormatButton
-// Place this OUTSIDE your main ScreenplayEditor function (at the bottom of the file)
 // -------------------------------------------------------------------------
 
 interface FormatButtonProps {
@@ -298,7 +304,7 @@ const FormatButton = ({ label, format, onToggle }: FormatButtonProps) => {
   return (
     <button
       onMouseDown={(event) => {
-        event.preventDefault(); // Prevents the editor from losing focus
+        event.preventDefault();
         onToggle(format);
       }}
       className="
