@@ -147,8 +147,7 @@ export default function Dashboard() {
           
           {/* Header */}
           <div className="flex justify-between items-center mb-8 border-b border-gray-800 pb-6">
-            <div className="h-16 w-48 mb-2 bg-contain bg-no-repeat bg-left">
-               <p className="text-6xl text-gray-200 font-bold px-0 py-3 tracking-wider">CINEHORIA</p>
+            <div className="h-13 w-48 mb-2 bg-contain bg-no-repeat bg-left" style={{ backgroundImage: "url('/logo6.png')" }}>
             </div> 
             
             <div className="flex gap-3">

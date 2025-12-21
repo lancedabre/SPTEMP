@@ -272,6 +272,8 @@ useEffect(() => {
   className="flex items-center gap-2 mb-1 opacity-50 hover:opacity-100 transition-opacity select-none cursor-pointer"
 >
   <span className="text-[10px] font-bold tracking-[0.3em] text-[#ff99cc]">CINEHORIA</span>
+  <div className="h-4 w-4 mb-0 bg-contain bg-no-repeat bg-left" style={{ backgroundImage: "url('/logo6.png')" }}>
+            </div> 
 </Link>
            <div className="w-50 h-px bg-gray-700 my-2"></div>
            <input
