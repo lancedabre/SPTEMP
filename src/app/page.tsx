@@ -20,10 +20,14 @@ export default function Dashboard() {
   // Ref for the hidden file input
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  
+
   // 1. Fetch Projects on Load
   useEffect(() => {
     fetchProjects();
   }, []);
+
+  
 
   async function fetchProjects() {
     const { data, error } = await supabase
@@ -37,27 +41,33 @@ export default function Dashboard() {
   }
 
   // 2. Create New Project Function
-  async function createProject() {
+  // 1. Make sure the function is async
+const createProject = async () => {  
+    setLoading(true); // Optional: Show loading state
+
+    // 2. Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // 3. Insert the project with the user's ID
     const { data, error } = await supabase
-      .from("projects")
-      .insert([
-        {
-          title: "Untitled Screenplay",
-          content: [
-            { type: "scene-heading", children: [{ text: "INT. START HERE" }] },
-          ],
-        },
-      ])
-      .select()
-      .single();
+        .from('projects')
+        .insert([{ 
+            title: 'Untitled Screenplay', 
+            content: [{ type: 'paragraph', children: [{ text: '' }] }], // Safe initial state
+            user_id: user?.id 
+        }])
+        .select()
+        .single();
 
     if (error) {
-      alert("Failed to create project");
-      console.error(error);
+        console.error("Error creating project:", error);
     } else if (data) {
-      router.push(`/project/${data.id}`);
+        // Redirect to the new project
+        router.push(`/project/${data.id}`);
     }
-  }
+    
+    setLoading(false);
+};
 
   // 3. Delete Project Function
   const deleteProject = async (id: string, e: React.MouseEvent) => {
