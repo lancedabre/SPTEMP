@@ -54,7 +54,6 @@ export const exportToPdf = async (slateNodes: any[]) => {
       case 'scene-heading':
         return { 
           text: text.toUpperCase(), 
-          bold: true, 
           margin: [0, 24, 0, 12], 
           style: 'scene' 
         };
@@ -68,7 +67,6 @@ export const exportToPdf = async (slateNodes: any[]) => {
       case 'character':
         return { 
           text: text.toUpperCase(), 
-          bold: true, 
           margin: [158, 12, 0, 0], // ~2.2 inches indent
           keepWithNext: true 
         };
