@@ -98,6 +98,15 @@ Follow these steps to run Cinehoria locally.
    npm run dev
 6. **Open your browser Navigate to http://localhost:3000 to start writing.**
 
+### 🗄️ Database Setup
+
+This project uses **Supabase**.
+
+1. Create a new project on [Supabase](https://supabase.com/).
+2. Go to the **SQL Editor** in your Supabase dashboard.
+3. Copy the contents of the [`schema.sql`](./schema.sql) file in this repository.
+4. Paste and run it to set up your tables and security policies.
+
 ### 🤝 Contributing
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
 
