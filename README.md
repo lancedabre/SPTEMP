@@ -31,8 +31,7 @@
 
 Whether you're outlining your next blockbuster or drafting an indie short, Cinehoria keeps your formatting perfect so you can focus on the story.
 
-![image](https://github.com/lancedabre/CINEHORIA/issues/1#issue-3753270564)
-
+![Cinehoria Interface](./public/screenshot.png)
 ---
 
 ## ✨ Key Features
