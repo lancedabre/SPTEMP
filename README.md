@@ -45,6 +45,20 @@ Whether you're outlining your next blockbuster or drafting an indie short, Cineh
 
 ---
 
+| Action | Shortcut (Win) | Shortcut (Mac) |
+| :--- | :--- | :--- |
+| **Scene Heading** | <kbd>Ctrl</kbd> + <kbd>1</kbd> | <kbd>Cmd</kbd> + <kbd>1</kbd> |
+| **Action** | <kbd>Ctrl</kbd> + <kbd>2</kbd> | <kbd>Cmd</kbd> + <kbd>2</kbd> |
+| **Character** | <kbd>Ctrl</kbd> + <kbd>3</kbd> | <kbd>Cmd</kbd> + <kbd>3</kbd> |
+| **Dialogue** | <kbd>Ctrl</kbd> + <kbd>4</kbd> | <kbd>Cmd</kbd> + <kbd>4</kbd> |
+| **Parenthetical** | <kbd>Ctrl</kbd> + <kbd>5</kbd> | <kbd>Cmd</kbd> + <kbd>5</kbd> |
+| **Transition** | <kbd>Ctrl</kbd> + <kbd>6</kbd> | <kbd>Cmd</kbd> + <kbd>6</kbd> |
+| **Bold** | <kbd>Ctrl</kbd> + <kbd>B</kbd> | <kbd>Cmd</kbd> + <kbd>B</kbd> |
+| **Italic** | <kbd>Ctrl</kbd> + <kbd>I</kbd> | <kbd>Cmd</kbd> + <kbd>I</kbd> |
+| **Underline** | <kbd>Ctrl</kbd> + <kbd>U</kbd> | <kbd>Cmd</kbd> + <kbd>U</kbd> |
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
@@ -71,3 +85,22 @@ Follow these steps to run Cinehoria locally.
    ```sh
    git clone [https://github.com/yourusername/cinehoria.git](https://github.com/yourusername/cinehoria.git)
    cd cinehoria
+2. **Install packages**
+   ```sh
+   npm install
+2. **Set up Environment Variables Create a .env.local file in the root directory:**
+   ```sh
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+4. **Run the development server**
+   ```sh
+   npm run dev
+6. **Open your browser Navigate to http://localhost:3000 to start writing.**
+
+### 🤝 Contributing
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
+    1. Fork the Project
+    2. Create your Feature Branch (git checkout -b feature/AmazingFeature)
+    3. Commit your Changes (git commit -m 'Add some AmazingFeature')
+    4. Push to the Branch (git push origin feature/AmazingFeature)
+    5. Open a Pull Request
