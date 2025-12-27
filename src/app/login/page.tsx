@@ -49,7 +49,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center bg-black text-white bg-[url('/menu-bg.jpg')] bg-cover">
+    <div className="min-h-screen relative flex items-center justify-center bg-black text-white bg-[url('/menu-bg.webp')] bg-cover">
         <div className="absolute top-8 left-8 z-10 h-13 w-48 bg-contain bg-no-repeat" style={{ backgroundImage: "url('/logo5.png')" }}>
             </div> 
       <div className="bg-black/50 backdrop-blur-md p-8 rounded-2xl border border-white/10 w-96 shadow-2xl">
